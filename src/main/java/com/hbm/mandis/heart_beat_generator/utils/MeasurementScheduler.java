@@ -32,7 +32,7 @@ public class MeasurementScheduler {
         boolean isAnomalous = random.nextDouble() < 0.2; // 20% of change of being an irregularity
         double measurementValue = simulatorService.generateMeasurement(isAnomalous);
 
-        EcgMeasurement measurement = new EcgMeasurement(measurementValue, Instant.now(), "HBM-12345");
+        EcgMeasurement measurement = new EcgMeasurement(measurementValue, Instant.now(), "550e8400-e29b-41d4-a716-446655440000");
 
         logger.info("Generated measurement: {}mV", measurement.getValue());
 

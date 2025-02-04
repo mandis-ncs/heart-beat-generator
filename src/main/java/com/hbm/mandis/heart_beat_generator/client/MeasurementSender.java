@@ -15,6 +15,7 @@ public class MeasurementSender {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
+    //TODO esta mandando algo??
     public void sendMeasurement(EcgMeasurement measurement) {
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, measurement, String.class);

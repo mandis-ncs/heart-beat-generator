@@ -1,11 +1,11 @@
 package com.hbm.mandis.heart_beat_generator.utils;
 
+import com.hbm.mandis.heart_beat_generator.domain.exceptions.MeasurementException;
 import com.hbm.mandis.heart_beat_generator.domain.models.EcgMeasurement;
+import com.hbm.mandis.heart_beat_generator.service.EcgSimulatorService;
+import com.hbm.mandis.heart_beat_generator.websocket.MeasurementWebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.hbm.mandis.heart_beat_generator.client.MeasurementSender;
-import com.hbm.mandis.heart_beat_generator.service.EcgSimulatorService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -18,12 +18,13 @@ public class MeasurementScheduler {
     private static final Logger logger = LoggerFactory.getLogger(MeasurementScheduler.class);
 
     private final EcgSimulatorService simulatorService;
-    private final MeasurementSender measurementSender;
+    private final MeasurementWebSocketClient webSocketClient;
     private final Random random = new Random();
 
-    public MeasurementScheduler(EcgSimulatorService simulatorService, MeasurementSender measurementSender) {
+    public MeasurementScheduler(EcgSimulatorService simulatorService,
+                                MeasurementWebSocketClient webSocketClient) {
         this.simulatorService = simulatorService;
-        this.measurementSender = measurementSender;
+        this.webSocketClient = webSocketClient;
     }
 
     @Scheduled(fixedDelayString = "#{T(java.util.concurrent.ThreadLocalRandom).current().nextLong(10, 101)}")
@@ -33,13 +34,12 @@ public class MeasurementScheduler {
 
         EcgMeasurement measurement = new EcgMeasurement(measurementValue, Instant.now(), "HBM-12345");
 
-        logger.info("Generated measurement: {}mV (Anomalous: {})", measurement.getValue());
+        logger.info("Generated measurement: {}mV", measurement.getValue());
 
         try {
-            measurementSender.sendMeasurement(measurement);
-            logger.info("Measurement sent successfully!");
+            webSocketClient.sendMeasurement(measurement);
         } catch (Exception e) {
-            logger.error("Error sending measurement: {}", e.getMessage());
+            throw new MeasurementException("Error sending measurement to websocket: {}", e);
         }
     }
 }
